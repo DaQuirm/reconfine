@@ -1,0 +1,55 @@
+name:                confine-game
+version:             0.1.0.0
+-- synopsis:
+-- description:
+license:             AGPL-3
+license-file:        LICENSE
+author:              Matthias Fischmann
+maintainer:          mf@zerobuzz.net
+-- copyright:
+category:            Game
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+
+library
+  hs-source-dirs:
+      src
+  ghc-options: -j -Wall -Werror
+  include-dirs:
+      src
+  build-depends:
+      base >=4.9 && <4.10
+    , mtl >=2.2 && <2.3
+  exposed-modules:
+      Confine
+  default-language: Haskell2010
+
+
+executable confine-game
+  main-is: Main.hs
+  build-depends:
+      base >=4.9 && <4.10
+    , mtl >=2.2 && <2.3
+    , confine-game
+  ghc-options: -j -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs: app
+  default-language: Haskell2010
+
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      test
+  ghc-options: -j -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
+  include-dirs:
+      src
+  build-depends:
+      base
+    , hspec
+    , confine-game
+  other-modules:
+      ConfineSpec
+  default-language: Haskell2010
