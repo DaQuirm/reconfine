@@ -37,25 +37,9 @@ import Types
 import Confine.Internal
 
 
-getOccupant :: MonadGame priv m => Point -> m (Maybe Player)
-getOccupant = undefined
-
-setOccupant :: MonadGame priv m => Player -> Point -> m ()
-setOccupant = undefined
-
-
-getEdge :: MonadGame priv m => Point -> Edge -> m Bool
-getEdge = undefined
-
--- | you can only switch once from False to True.
-setEdge :: MonadGame priv m => Point -> Edge -> m ()
-setEdge = undefined
-
-
 -- | 'setEdge', then potentially 'setOccupant' of (one of) the two affected cells.
-move :: MonadGame priv m => Player -> Point -> Edge -> m (GameState priv)
+move :: MonadGame m => Player -> Point -> Edge -> m GameState
 move = undefined
 
-
-run :: Int -> Game a -> Either GameError a
-run = undefined
+run :: BoardSize -> [Player] -> Game a -> Either GameError a
+run size players game = evalState (runExceptT game) (initialGameState size players)
