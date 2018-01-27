@@ -51,27 +51,31 @@ emptyState = InProgress
 data GameError = InternalOutOfBounds Point | EdgeAlreadySet Point Edge
   deriving (Eq, Ord, Show)
 
-type Eff m {- :: Constraint -} = (MonadState GameState m, MonadError GameError m)
+type Game m {- :: Constraint -} = (MonadState GameState m, MonadError GameError m)
 
 
-getOccupant :: Eff m => Point -> m Player
+getOccupant :: Game m => Point -> m Player
 getOccupant = _
 
-setOccupant :: Eff m => Player -> Point -> m ()
+setOccupant :: Game m => Player -> Point -> m ()
 setOccupant = _
 
 
 data Edge = TopEdge | BottomEdge | LeftEdge | RightEdge
   deriving (Eq, Ord, Show)
 
-getEdge :: Eff m => Point -> Edge -> m Bool
+getEdge :: Game m => Point -> Edge -> m Bool
 getEdge = _
 
 -- | you can only switch once from False to True.
-setEdge :: Eff m => Point -> Edge -> m ()
+setEdge :: Game m => Point -> Edge -> m ()
 setEdge = _
 
 
 -- | 'setEdge', then potentially 'setOccupant' of (one of) the two affected cells.
-move :: Eff m => Player -> Point -> Edge -> m GameState
+move :: Game m => Player -> Point -> Edge -> m GameState
 move = _
+
+
+run :: (MonadIO m, Game m) => GameState -> Game m -> IO (Either GameError GameState)
+run = _
