@@ -28,31 +28,31 @@
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE ViewPatterns               #-}
 
-module ConfineSpec where
+module Types where
 
-import Test.Hspec
-import Confine
-import Types
-import Control.Monad
+import Control.Monad.State
+import Control.Monad.Except
 
+type X = Int
+type Y = Int
+type Point = (X, Y)
 
-spec :: Spec
-spec = do
-  describe "setOccupant, getOccupant" $ do
-    it "are a bit like inverses" $ do
-      let game p1 p2 = setOccupant "me" p1 >> getOccupant p2
+data Edge = TopEdge | BottomEdge | LeftEdge | RightEdge
+  deriving (Eq, Ord, Show)
 
-      forM_ [ ((i1, j1), (i2, j2)) | i1 <- [0..3], j1 <- [0..3], i2 <- [0..3], j2 <- [0..3] ] $
-        \(p1, p2) -> run 3 (game p1 p2) `shouldBe` Right (if p1 == p2 then Just "me" else Nothing)
+type Player = String
 
-    it "setOccupant throws exception on occupied point" $ do
-      pending
+type Score = Int
 
-  describe "getEge" $ do
-    it "works" pending
+-- | In 'Done', all 'Player's are listed.  The lists inside the list contain 'Player's with same
+-- score.
+data GameState priv = InProgress priv [Player] Int | Done [[(Player, Score)]]
+  deriving (Eq, Ord, Show)
 
-  describe "setEge" $ do
-    it "works" pending
+data GameError
+  = InternalErrorOutOfBounds Point
+  | EdgeAlreadySet Point Edge Player
+  | PointAlreadyOccupied Point Player
+  deriving (Eq, Ord, Show)
 
-  describe "move" $ do
-    it "works" pending
+type MonadGame priv m {- :: Constraint -} = (MonadState (GameState priv) m, MonadError GameError m)

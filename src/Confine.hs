@@ -31,51 +31,31 @@
 module Confine where
 
 import Control.Monad.State
-import Control.Monad.Error
+import Control.Monad.Except
 
-type X = Int
-type Y = Int
-type Point = (X, Y)
-
-type Player = String
-
-type Score = Int
-
--- | in 'Done', all 'Player's are listed.  list inside list contains 'Player's with same score.
-data GameState = InProgress | Done [[(Player, Score)]]
-  deriving (Eq, Ord, Show)
-
-emptyState :: GameState
-emptyState = InProgress
-
-data GameError = InternalOutOfBounds Point | EdgeAlreadySet Point Edge
-  deriving (Eq, Ord, Show)
-
-type Game m {- :: Constraint -} = (MonadState GameState m, MonadError GameError m)
+import Types
+import Confine.Internal
 
 
-getOccupant :: Game m => Point -> m Player
-getOccupant = _
+getOccupant :: MonadGame priv m => Point -> m (Maybe Player)
+getOccupant = undefined
 
-setOccupant :: Game m => Player -> Point -> m ()
-setOccupant = _
+setOccupant :: MonadGame priv m => Player -> Point -> m ()
+setOccupant = undefined
 
 
-data Edge = TopEdge | BottomEdge | LeftEdge | RightEdge
-  deriving (Eq, Ord, Show)
-
-getEdge :: Game m => Point -> Edge -> m Bool
-getEdge = _
+getEdge :: MonadGame priv m => Point -> Edge -> m Bool
+getEdge = undefined
 
 -- | you can only switch once from False to True.
-setEdge :: Game m => Point -> Edge -> m ()
-setEdge = _
+setEdge :: MonadGame priv m => Point -> Edge -> m ()
+setEdge = undefined
 
 
 -- | 'setEdge', then potentially 'setOccupant' of (one of) the two affected cells.
-move :: Game m => Player -> Point -> Edge -> m GameState
-move = _
+move :: MonadGame priv m => Player -> Point -> Edge -> m (GameState priv)
+move = undefined
 
 
-run :: (MonadIO m, Game m) => GameState -> Game m -> IO (Either GameError GameState)
-run = _
+run :: Int -> Game a -> Either GameError a
+run = undefined

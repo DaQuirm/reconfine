@@ -2,6 +2,7 @@
 {-# LANGUAGE ConstraintKinds            #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DefaultSignatures          #-}
+{-# LANGUAGE DeriveAnyClass             #-}
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE ExplicitForAll             #-}
@@ -28,31 +29,14 @@
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE ViewPatterns               #-}
 
-module ConfineSpec where
+module Confine.Internal where
 
-import Test.Hspec
-import Confine
+import Control.Monad.State
+import Control.Monad.Except
+
 import Types
-import Control.Monad
 
 
-spec :: Spec
-spec = do
-  describe "setOccupant, getOccupant" $ do
-    it "are a bit like inverses" $ do
-      let game p1 p2 = setOccupant "me" p1 >> getOccupant p2
+type Priv = ()
 
-      forM_ [ ((i1, j1), (i2, j2)) | i1 <- [0..3], j1 <- [0..3], i2 <- [0..3], j2 <- [0..3] ] $
-        \(p1, p2) -> run 3 (game p1 p2) `shouldBe` Right (if p1 == p2 then Just "me" else Nothing)
-
-    it "setOccupant throws exception on occupied point" $ do
-      pending
-
-  describe "getEge" $ do
-    it "works" pending
-
-  describe "setEge" $ do
-    it "works" pending
-
-  describe "move" $ do
-    it "works" pending
+type Game = ExceptT GameError (State (GameState Priv))
