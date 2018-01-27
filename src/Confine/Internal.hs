@@ -33,10 +33,24 @@ module Confine.Internal where
 
 import Control.Monad.State
 import Control.Monad.Except
+import Data.Set as Set
+import Data.Map as Map
 
 import Types
 
 
-type Priv = ()
-
 type Game = ExceptT GameError (State (GameState Priv))
+
+type Priv = (Set Vector, Map Point Player)
+
+type Vector = (Point, VectorDir)  -- (slight abuse of linear algebar terminology)
+
+data VectorDir = VectorDown | VectorRight
+  deriving (Eq, Ord, Show)
+
+
+mkVector :: Point -> Edge -> Vector
+mkVector (x, y) TopEdge    = ((x, y),     VectorRight)
+mkVector (x, y) BottomEdge = ((x, y + 1), VectorRight)
+mkVector (x, y) LeftEdge   = ((x, y),     VectorDown)
+mkVector (x, y) RightEdge  = ((x + 1, y), VectorDown)
