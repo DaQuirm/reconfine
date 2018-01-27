@@ -80,6 +80,10 @@ initialGameState boardSize pls
       )
 
 
+getResult :: GameState -> Maybe GameResult
+getResult st = st ^? whatsNext . _Right
+
+
 mkVector :: Point -> Edge -> Vector
 mkVector (x, y) TopEdge    = ((x, y),     VectorRight)
 mkVector (x, y) BottomEdge = ((x, y + 1), VectorRight)
@@ -95,7 +99,7 @@ instance MonadGame Game where
   setOccupant player point = do
     s <- get
 
-    unless (isLeft $ s ^. whatsNext) $
+    when (isJust $ getResult s) $
       throwError DoNotMoveOnFinishedGame
 
     unless (isNothing (Map.lookup point (s ^. occupants))) $
