@@ -45,4 +45,4 @@ run' :: GameState -> Game a -> Either GameError a
 run' st game = evalState (runExceptT game) st
 
 run :: BoardSize -> [Player] -> Game a -> Either GameError a
-run size players = run' (initialGameState size players)
+run size pls = run' (initialGameState size pls)

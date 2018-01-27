@@ -30,6 +30,7 @@
 
 module ConfineSpec where
 
+import Control.Lens
 import Control.Monad
 import Data.Maybe
 import Test.Hspec
@@ -49,7 +50,8 @@ spec = do
 
     describe "setOccupant" $ do
       it "throws exception if game is not in progress" $ do
-        run' (Done undefined) (setOccupant 0 (0, 0))
+        let st = initialGameState 3 ["me"] & whatsNext .~ Right undefined
+        run' st (setOccupant 0 (0, 0))
           `shouldBe` Left DoNotMoveOnFinishedGame
 
       it "throws exception if point is already occupied" $ do
@@ -66,7 +68,8 @@ spec = do
 
     describe "getOccupant" $ do
       it "works even if game is complete" $ do
-        (isJust <$> run' (Done undefined) (getOccupant (0, 0)))
+        let st = initialGameState 3 ["me"] & whatsNext .~ Right undefined
+        (isNothing <$> run' st (getOccupant (0, 0)))
           `shouldBe` Right True
 
       it "returns Just if point is occupied" $ do

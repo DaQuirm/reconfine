@@ -35,6 +35,7 @@ import Control.Exception (assert)
 import Control.Lens
 import Control.Monad.Except
 import Control.Monad.State
+import Data.Either (isLeft)
 import Data.List as List
 import Data.Map as Map
 import Data.Maybe
@@ -47,14 +48,13 @@ import Types
 type Game = ExceptT GameError (State GameState)
 
 data GameState
-  = InProgress
+  = GameState
       { _boardsize :: BoardSize
       , _edges     :: Set Vector
       , _occupants :: Map Point PlayerIndex
       , _players   :: [Player]
-      , _currentPl :: PlayerIndex
+      , _whatsNext :: Either PlayerIndex GameResult
       }
-  | Done GameResult
   deriving (Eq, Ord, Show)
 
 type Vector = (Point, VectorDir)  -- (slight abuse of linear algebra or haskell terminology)
@@ -70,7 +70,7 @@ $(makePrisms ''GameState)
 initialGameState :: BoardSize -> [Player] -> GameState
 initialGameState boardSize pls
   = assert (not $ List.null pls) $
-    InProgress boardSize edgs mempty pls 0
+    GameState boardSize edgs mempty pls (Left 0)
   where
     edgs = Set.fromList $ uncurry mkVector <$>
       ( [ ((x, 0),             LeftEdge)   | x <- [0 .. boardSize - 1] ] <>
@@ -95,7 +95,7 @@ instance MonadGame Game where
   setOccupant player point = do
     s <- get
 
-    unless (has _InProgress s) $
+    unless (isLeft $ s ^. whatsNext) $
       throwError DoNotMoveOnFinishedGame
 
     unless (isNothing (Map.lookup point (s ^. occupants))) $
