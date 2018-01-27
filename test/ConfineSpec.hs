@@ -43,11 +43,9 @@ spec :: Spec
 spec = do
   describe "setOccupant, getOccupant" $ do
     it "are a bit like inverses" $ do
-      let game p1 p2 = setOccupant 0 p1 >> getOccupant p2
-
       forM_ [ ((i1, j1), (i2, j2)) | i1 <- [0..3], j1 <- [0..3], i2 <- [0..3], j2 <- [0..3] ] $
-        \(p1, p2) -> run 3 ["me"] (game p1 p2)
-                     `shouldBe` Right (if p1 == p2 then Just 0 else Nothing)
+        \(p1, p2) -> run 3 ["me"] (setOccupant 0 p1 >> getOccupant p2)
+                       `shouldBe` Right (if p1 == p2 then Just 0 else Nothing)
 
     describe "setOccupant" $ do
       it "throws exception if game is not in progress" $ do

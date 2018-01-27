@@ -37,6 +37,7 @@ import Control.Monad.Except
 import Control.Monad.State
 import Data.List as List
 import Data.Map as Map
+import Data.Maybe
 import Data.Monoid
 import Data.Set as Set
 
@@ -62,15 +63,16 @@ data VectorDir = VectorDown | VectorRight
   deriving (Eq, Ord, Show)
 
 $(makeLenses ''GameState)
+$(makePrisms ''GameState)
 
 
 -- TODO: shuffle players in random order (not necessarily in this function)
 initialGameState :: BoardSize -> [Player] -> GameState
-initialGameState boardSize players
-  = assert (not $ List.null players) $
-    InProgress boardSize edges mempty players 0
+initialGameState boardSize pls
+  = assert (not $ List.null pls) $
+    InProgress boardSize edgs mempty pls 0
   where
-    edges = Set.fromList $ uncurry mkVector <$>
+    edgs = Set.fromList $ uncurry mkVector <$>
       ( [ ((x, 0),             LeftEdge)   | x <- [0 .. boardSize - 1] ] <>
         [ ((x, boardSize - 1), RightEdge)  | x <- [0 .. boardSize - 1] ] <>
         [ ((0, y),             TopEdge)    | y <- [0 .. boardSize - 1] ] <>
@@ -90,19 +92,31 @@ instance MonadGame Game where
   getOccupant point = gets (Map.lookup point . view occupants)
 
   setOccupant :: PlayerIndex -> Point -> Game ()
-  setOccupant player point = modify $ occupants %~ (<> Map.singleton point player)
+  setOccupant player point = do
+    s <- get
+
+    unless (has _InProgress s) $
+      throwError DoNotMoveOnFinishedGame
+
+    unless (isNothing (Map.lookup point (s ^. occupants))) $
+      throwError (PointAlreadyOccupied player point)
+
+    unless (player >= 0 && player < length (s ^. players)) $
+      throwError (NoSuchPlayer player)
+
+    modify $ occupants %~ (<> Map.singleton point player)
 
   getEdge :: Point -> Edge -> Game Bool
-  getEdge     = undefined
+  getEdge = undefined
 
   setEdge :: Point -> Edge -> Game ()  -- you can only switch once from False to True.
-  setEdge     = undefined
+  setEdge = undefined
 
   getPlayer :: PlayerIndex -> Game Player
-  getPlayer     = undefined
+  getPlayer = undefined
 
   currentPlayer :: Game PlayerIndex
   currentPlayer = undefined
 
   nextPlayer :: Game ()
-  nextPlayer    = undefined
+  nextPlayer = undefined
