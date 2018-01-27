@@ -30,10 +30,13 @@
 
 module ConfineSpec where
 
-import Test.Hspec
-import Confine
-import Types
 import Control.Monad
+import Data.Maybe
+import Test.Hspec
+
+import Confine
+import Confine.Internal
+import Types
 
 
 spec :: Spec
@@ -43,16 +46,43 @@ spec = do
       let game p1 p2 = setOccupant 0 p1 >> getOccupant p2
 
       forM_ [ ((i1, j1), (i2, j2)) | i1 <- [0..3], j1 <- [0..3], i2 <- [0..3], j2 <- [0..3] ] $
-        \(p1, p2) -> run 3 ["me"] (game p1 p2) `shouldBe` Right (if p1 == p2 then Just 0 else Nothing)
+        \(p1, p2) -> run 3 ["me"] (game p1 p2)
+                     `shouldBe` Right (if p1 == p2 then Just 0 else Nothing)
 
-    it "setOccupant throws exception if game is not in progress" $ do
-      pending
+    describe "setOccupant" $ do
+      it "throws exception if game is not in progress" $ do
+        run' (Done undefined) (setOccupant 0 (0, 0))
+          `shouldBe` Left DoNotMoveOnFinishedGame
 
-    it "setOccupant throws exception if point is already occupied" $ do
-      pending
+      it "throws exception if point is already occupied" $ do
+        let player = 0
+            point  = (1, 2)
+        run 3 ["me"] (setOccupant player point >> setOccupant player point)
+          `shouldBe` Left (PointAlreadyOccupied player point)
 
-    it "setOccupant throws exception if playerIndex is invalid" $ do
-      pending
+      it "throws exception if playerIndex is invalid" $ do
+        let player = 1
+            point  = (1, 2)
+        run 3 ["me"] (setOccupant player point >> setOccupant player point)
+          `shouldBe` Left (NoSuchPlayer player)
+
+    describe "getOccupant" $ do
+      it "works even if game is complete" $ do
+        (isJust <$> run' (Done undefined) (getOccupant (0, 0)))
+          `shouldBe` Right True
+
+      it "returns Just if point is occupied" $ do
+        let player = 0
+            point  = (1, 2)
+        run 3 ["me"] (setOccupant player point >> getOccupant point)
+          `shouldBe` Right (Just player)
+
+      it "returns Nothing if point is not occupied" $ do
+        let player = 0
+            point1 = (1, 2)
+            point2 = (2, 2)
+        run 3 ["me"] (setOccupant player point1 >> getOccupant point2)
+          `shouldBe` Right Nothing
 
   describe "getEge" $ do
     it "works" pending

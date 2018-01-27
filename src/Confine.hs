@@ -41,5 +41,8 @@ import Confine.Internal
 move :: MonadGame m => Player -> Point -> Edge -> m GameState
 move = undefined
 
+run' :: GameState -> Game a -> Either GameError a
+run' st game = evalState (runExceptT game) st
+
 run :: BoardSize -> [Player] -> Game a -> Either GameError a
-run size players game = evalState (runExceptT game) (initialGameState size players)
+run size players = run' (initialGameState size players)

@@ -51,9 +51,10 @@ type Score = Int
 type GameResult = [[(Player, Score)]]
 
 data GameError
-  = InternalErrorOutOfBounds Point
-  | EdgeAlreadySet Point Edge Player
-  | PointAlreadyOccupied Point Player
+  = PointOutOfBounds Point
+  | NoSuchPlayer PlayerIndex
+  | EdgeAlreadyBuilt PlayerIndex Point Edge
+  | PointAlreadyOccupied PlayerIndex Point
   | DoNotMoveOnFinishedGame
   deriving (Eq, Ord, Show)
 
