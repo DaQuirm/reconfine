@@ -41,18 +41,30 @@ data Edge = TopEdge | BottomEdge | LeftEdge | RightEdge
   deriving (Eq, Ord, Show)
 
 type Player = String
+type PlayerIndex = Int
+
+type BoardSize = Int
 
 type Score = Int
 
--- | In 'Done', all 'Player's are listed.  The lists inside the list contain 'Player's with same
--- score.
-data GameState priv = InProgress priv [Player] Int | Done [[(Player, Score)]]
-  deriving (Eq, Ord, Show)
+-- | All 'Player's are listed.  The lists inside the list contain 'Player's with same score.
+type GameResult = [[(Player, Score)]]
 
 data GameError
-  = InternalErrorOutOfBounds Point
-  | EdgeAlreadySet Point Edge Player
-  | PointAlreadyOccupied Point Player
+  = PointOutOfBounds Point
+  | NoSuchPlayer PlayerIndex
+  | EdgeAlreadyBuilt PlayerIndex Point Edge
+  | PointAlreadyOccupied PlayerIndex Point
+  | DoNotMoveOnFinishedGame
   deriving (Eq, Ord, Show)
 
-type MonadGame priv m {- :: Constraint -} = (MonadState (GameState priv) m, MonadError GameError m)
+
+class MonadGame m where
+  getOccupant :: Point -> m (Maybe PlayerIndex)
+  setOccupant :: PlayerIndex -> Point -> m ()
+  getEdge     :: Point -> Edge -> m Bool
+  setEdge     :: Point -> Edge -> m ()  -- you can only switch once from False to True.
+
+  getPlayer     :: PlayerIndex -> m Player
+  currentPlayer :: m PlayerIndex
+  nextPlayer    :: m ()

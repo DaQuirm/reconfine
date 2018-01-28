@@ -30,32 +30,49 @@
 
 module Confine where
 
+import Control.Exception
+import Control.Monad
 import Control.Monad.State
 import Control.Monad.Except
+import Data.Monoid
 
 import Types
 import Confine.Internal
 
 
-getOccupant :: MonadGame priv m => Point -> m (Maybe Player)
-getOccupant = undefined
-
-setOccupant :: MonadGame priv m => Player -> Point -> m ()
-setOccupant = undefined
-
-
-getEdge :: MonadGame priv m => Point -> Edge -> m Bool
-getEdge = undefined
-
--- | you can only switch once from False to True.
-setEdge :: MonadGame priv m => Point -> Edge -> m ()
-setEdge = undefined
-
-
--- | 'setEdge', then potentially 'setOccupant' of (one of) the two affected cells.
-move :: MonadGame priv m => Player -> Point -> Edge -> m (GameState priv)
+-- | Call 'setEdge', then check if 'setOccupant' needs calling on any of the two affected cells and
+-- update whatsNext.
+move :: MonadGame m => Point -> Edge -> m ()
 move = undefined
 
 
-run :: Int -> Game a -> Either GameError a
-run = undefined
+run' :: GameState -> Game a -> Either GameError a
+run' st game = evalState (runExceptT game) st
+
+run :: BoardSize -> [Player] -> Game a -> Either GameError a
+run size pls = run' (initialGameState size pls)
+
+
+------------------------------------------------------------------------------------------------------
+-- i'll try to be a bit more pragmatic, less abstract from here on.  it could be worth refactoring
+-- this later.
+
+drawBoard :: GameState -> IO ()
+drawBoard = undefined
+
+getMove :: GameState -> IO (Point, Edge)
+getMove = undefined
+
+play :: IO ()
+play = go (initialGameState 10 ["a", "b"])
+  where
+    go st = do
+      drawBoard st
+      case getResult st of
+        Nothing -> do
+          (pt, edg) <- getMove st
+          case run' st (move pt edg >> get) of
+            Left err -> throwIO . ErrorCall . show $ err
+            Right st' -> go st'
+
+        Just r -> putStrLn $ "done: " <> show r
